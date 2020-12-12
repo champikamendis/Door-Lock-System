@@ -21,6 +21,9 @@ public class UserModel {
     @Column
     private String authority;
 
+    @Column
+    private boolean isVerified;
+
 
     public  String getAuthority() { return authority; }
 
@@ -46,6 +49,11 @@ public class UserModel {
         return username;
     }
 
-    public void setEnabled(boolean b) {
+    public boolean getIsVerified() { return isVerified; }
+
+    public void setIsVerified(boolean isVerified) {
+        this.isVerified = isVerified;
     }
+
+
 }

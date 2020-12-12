@@ -8,6 +8,7 @@ import com.project.securedoor.Repository.UserRepository;
 import com.project.securedoor.Service.EmailSenderService;
 import com.project.securedoor.Service.UserService;
 import org.apache.catalina.Store;
+import org.hibernate.loader.plan.spi.Return;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
@@ -40,13 +41,12 @@ public class UserController {
             UserModel user = userService.save(userRequestModel);
             ConfirmationToken confirmationToken = new ConfirmationToken(user);
             confirmationTokenRepository.save(confirmationToken);
-
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setTo(user.getUsername());
             mailMessage.setSubject("Complete Registration!");
             mailMessage.setFrom("champmend@gmail.com");
             mailMessage.setText("To confirm your account, please click here : "
-                    +"http://localhost:8030/confirm-account?token="+confirmationToken.getConfirmationToken());
+                    +"http://localhost:8040/confirm-account?token="+confirmationToken.getConfirmationToken());
             try{
                 emailSenderService.sendMail(mailMessage);
             }catch(Exception e){
@@ -58,20 +58,31 @@ public class UserController {
     }
 
     @RequestMapping(value="/confirm-account", method= {RequestMethod.GET, RequestMethod.POST})
-    public String confirmUserAccount(@RequestParam("token")String confirmationToken)
+    public ResponseEntity<?> confirmUserAccount(@RequestParam("token")String confirmationToken)
     {
         ConfirmationToken token = (ConfirmationToken) confirmationTokenRepository.findByConfirmationToken(confirmationToken);
 
         if(token != null)
         {
             UserModel user = userRepository.findByUsername(token.getUser().getUserName());
-            user.setEnabled(true);
+            user.setIsVerified(true);
             userRepository.save(user);
-            return("Account Verified");
+            return ResponseEntity.ok("Account Verified");
         }
         else
         {
-            return("The link is invalid or broken!");
+            return ResponseEntity.ok("The link is invalid or broken!");
+        }
+    }
+
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    public ResponseEntity<?> login(@RequestParam("username")String username, @RequestParam("password")String password) {
+        if(userService.isCorrectUser(username,password)){
+
+            return ResponseEntity.ok("Valid credentials");
+        }
+        else {
+            return ResponseEntity.ok("Invalid username or password");
         }
     }
 }

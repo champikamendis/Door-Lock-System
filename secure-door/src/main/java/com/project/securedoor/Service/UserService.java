@@ -4,16 +4,13 @@ import com.project.securedoor.Model.UserModel;
 import com.project.securedoor.Model.UserRequestModel;
 import com.project.securedoor.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +42,19 @@ public class UserService implements UserDetailsService {
         newUser.setPassword(passwordEncoder.encode(user.getPassword()));
         newUser.setAuthority(user.getAuthority());
         return userRepository.save(newUser);
+    }
+
+    public boolean isCorrectUser(String username, String password) throws UsernameNotFoundException{
+        boolean isPasswordMatch;
+        UserModel user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found with username: " + username);
+        }
+        else {
+            isPasswordMatch = passwordEncoder.matches(password, user.getPassword());
+            System.out.println(isPasswordMatch);
+        }
+        return isPasswordMatch;
     }
 
     public boolean loadUserByUsernameForCheck(String username) {
