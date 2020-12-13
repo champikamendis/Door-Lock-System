@@ -1,7 +1,7 @@
 package com.project.securedoor.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jdk.nashorn.internal.objects.annotations.Getter;
+//import jdk.nashorn.internal.objects.annotations.Getter;
 
 import javax.persistence.*;
 

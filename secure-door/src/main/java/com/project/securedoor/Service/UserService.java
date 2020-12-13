@@ -5,6 +5,7 @@ import com.project.securedoor.Model.UserRequestModel;
 import com.project.securedoor.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,16 +19,21 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 
+
 @Service
 public class UserService implements UserDetailsService {
     public boolean isNewUser;
 
+   
     @Autowired
     private UserRepository userRepository;
 
+    
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    
+    
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserModel user = userRepository.findByUsername(username);
