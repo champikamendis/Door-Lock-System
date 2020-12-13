@@ -6,34 +6,19 @@
 <title>Register employee</title>
 </head>
 <body>
-<div ng-app = "myApp" class = "container" style="width:550px">
+<div class = "container" style="width:550px">
     <div style="text-align:center;">
-    <h3><b>Employe register and Authantication</b></h3>
+    <h3><b>Open the door</b></h3>
     </div>
-    <div ng-controller = "RegisterController">
-    <div align="right">
-    <a href="#" ng-click="searchUser()">{{title}}</a>
-    </div>
-    <form role = "form" class="well" ng-hide="ifSearchUser">
+    <div>
+    <form role = "form" class="well">
     <div class = "form-group">
-    <label for = "name"> Name:  </label>
-    <input type = "text" id = "name" class = "form-control" placeholder = "Enter Name " ng-model = "newuser.name">
-    </div>
-    <div class = "form-group">
-    <label for = "email"> Email:  </label>
-    <input type = "email" id = "email" class = "form-control" placeholder = "Enter Email " ng-model = "newuser.email">
-    </div>
-    <div class = "form-group">
-    <label for = "password"> Password:  </label>
-    <input type = "password" id = "password" class = "form-control" placeholder = "Enter Password " ng-model = "newuser.password">
-    </div>
-    <div class = "form-group">
-    <label for = "phone"> Phone:  </label>
-    <input type = "text" id = "phone" class = "form-control" placeholder = "Enter Phone " ng-model = "newuser.phone">
+    <label for = "password"> Finger Print:  </label>
+    <input type = "password" id = "password" class = "form-control" placeholder = "Finger Print">
     </div>
     <br>
-    <input type="hidden" ng-model="newuser.id">
-    <input type="button" class="btn btn-primary" ng-click="saveUser()" class="btn btn-primary" value = "Submit">
+    <input type="hidden">
+    <input type="button" class="btn btn-primary" class="btn btn-primary" value = "Submit">
     </form>
     </div>
     </div>
