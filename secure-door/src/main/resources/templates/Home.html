@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<h1>Security Door System</h1>
+  <form action="#" th:action="@{/opendoor}" th:object="${opendoor}" method="post">
+        <p><input type="submit" value="open door" /></p>
+    </form>
+    <form action="#" th:action="@{/empregister}" th:object="${register}" method="post">
+        <p><input type="submit" value="Register" /></p>
+    </form>
+</body>
+</html>

@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -59,16 +60,29 @@ public class UserController{
 //    	return PATH;
 //    }
 
-    @RequestMapping(value = "/register", method = RequestMethod.GET)
+    @RequestMapping(value = "/", method = RequestMethod.GET)
     public ModelAndView ViewHomePage() {
     	ModelAndView mav = new ModelAndView();
     	mav.addObject("usermodel", new UserModel());
-    	mav.setViewName("register");  // resources/templates/register.html
+    	mav.setViewName("Home");  // resources/templates/Home.html
     	return mav;
+    }
+    @PostMapping(value = "/opendoor")
+    public String Login()
+    {
+        System.out.print("ok");
+        return "login";			// resources/templates/login.html
+    }
+    @PostMapping(value = "/empregister")
+    public String Register()
+    {
+        System.out.print("ok");
+        return "register";		// resources/templates/register.html
     }
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public ResponseEntity<?> verifyValidNewUser(@RequestBody UserRequestModel userRequestModel) throws Exception {
         userService.loadUserByUsernameForCheck(userRequestModel.getUsername());
+        
         if(userService.isNewUser) {
             UserModel user = userService.save(userRequestModel);
             ConfirmationToken confirmationToken = new ConfirmationToken(user);
