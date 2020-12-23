@@ -70,7 +70,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             "/authenticate"
             ,"/login"
             ,"/register"
-            ,"/welcome"
+            ,"/"
             ,"/register/confirm-account"
             ,"/test/**"
 

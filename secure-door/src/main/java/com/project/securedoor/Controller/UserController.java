@@ -65,7 +65,7 @@ public class UserController {
         return "authenticate";
     }
 
-    @RequestMapping("/welcome")
+    @RequestMapping("/")
     public ModelAndView firstPage() {
         return new ModelAndView("welcome");
     }
@@ -179,20 +179,20 @@ public class UserController {
                     System.out.println(e.getStackTrace());
                 }
             }
-            return ResponseEntity.ok("You have to confirm it's you");
+            return ResponseEntity.ok("Verification email sent. You have to confirm it's you");
         }
 
         @RequestMapping(value = "/register/confirm-account", method = {RequestMethod.GET, RequestMethod.POST})
-        public ResponseEntity<?> confirmUserAccount(@RequestParam("token") String confirmationToken) {
+        public ModelAndView confirmUserAccount(@RequestParam("token") String confirmationToken) {
             ConfirmationToken token = (ConfirmationToken) confirmationTokenRepository.findByConfirmationToken(confirmationToken);
 
             if (token != null) {
                 UserModel user = userRepository.findByUsername(token.getUser().getUserName());
                 user.setIsVerified(true);
                 userRepository.save(user);
-                return ResponseEntity.ok("Account Verified");
+                return new ModelAndView("accountVerified");
             } else {
-                return ResponseEntity.ok("The link is invalid or broken!");
+                return new ModelAndView("accountNotVerified");
             }
         }
 
