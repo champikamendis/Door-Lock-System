@@ -2,7 +2,6 @@ package com.project.securedoor.Model;
 
 import lombok.*;
 
-import javax.jws.soap.SOAPBinding;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;

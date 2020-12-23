@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,9 +32,9 @@ public class UserService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("User not found with username: " + username);
         }
-        List<SimpleGrantedAuthority> grantedAuthorities = Collections.singletonList(new SimpleGrantedAuthority(user.getAuthority()));
-        System.out.println(grantedAuthorities);
-        return new User(user.getUsername(), user.getPassword(), grantedAuthorities);
+//        List<SimpleGrantedAuthority> grantedAuthorities = Collections.singletonList(new SimpleGrantedAuthority(user.getAuthority()));
+//        System.out.println(grantedAuthorities);
+        return new User(user.getUsername(), user.getPassword(), new ArrayList<>());
     }
 
     public UserModel save(UserRequestModel user) {
@@ -42,19 +43,6 @@ public class UserService implements UserDetailsService {
         newUser.setPassword(passwordEncoder.encode(user.getPassword()));
         newUser.setAuthority(user.getAuthority());
         return userRepository.save(newUser);
-    }
-
-    public boolean isCorrectUser(String username, String password) throws UsernameNotFoundException{
-        boolean isPasswordMatch;
-        UserModel user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found with username: " + username);
-        }
-        else {
-            isPasswordMatch = passwordEncoder.matches(password, user.getPassword());
-            System.out.println(isPasswordMatch);
-        }
-        return isPasswordMatch;
     }
 
     public boolean loadUserByUsernameForCheck(String username) {

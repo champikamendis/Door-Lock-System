@@ -1,7 +1,6 @@
 package com.project.securedoor.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jdk.nashorn.internal.objects.annotations.Getter;
 
 import javax.persistence.*;
 
@@ -54,6 +53,5 @@ public class UserModel {
     public void setIsVerified(boolean isVerified) {
         this.isVerified = isVerified;
     }
-
 
 }
