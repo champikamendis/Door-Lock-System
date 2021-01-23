@@ -26,6 +26,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
 public class UserController {
@@ -71,7 +72,7 @@ public class UserController {
     }
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-    public ResponseEntity<?> createAuthenticationToken(@ModelAttribute("authenticationRequest") JwtRequest authenticationRequest) throws Exception {
+    public RedirectView createAuthenticationToken(@ModelAttribute("authenticationRequest") JwtRequest authenticationRequest) throws Exception {
 
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
@@ -79,12 +80,15 @@ public class UserController {
                 .loadUserByUsername(authenticationRequest.getUsername());
 
         final String token = jwtTokenUtil.generateToken(userDetails);
-
-        return ResponseEntity.ok(new JwtResponse(token));
+        if(token!=null){
+            return new RedirectView("/authenticate/generateOtp");
+        }else{
+            return new RedirectView("/authenticate");
+        }
     }
 
         @RequestMapping(value = "/authenticate/generateOtp", method = RequestMethod.GET)
-        public ResponseEntity<?> generateOTP() {
+        public ModelAndView generateOTP() {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             int otp = otpService.generateOTP(username);
@@ -95,11 +99,11 @@ public class UserController {
             mailMessage.setText("Here is the OTP " + otp);
             try {
                 emailSenderService.sendMail(mailMessage);
-                return ResponseEntity.ok("OTP sent successfull");
+                return new ModelAndView("otpVerification");
             } catch (Exception e) {
                 e.getStackTrace();
                 System.out.println(e.getStackTrace());
-                return ResponseEntity.ok(e.getStackTrace());
+                return new ModelAndView("error");
             }
 
         }
@@ -136,6 +140,12 @@ public class UserController {
         public ModelAndView registerPage() {
             return new ModelAndView("register");
         }
+
+    @RequestMapping(value = "/test/register", method = RequestMethod.GET)
+    public ModelAndView otpPage() {
+        return new ModelAndView("otpVerification");
+    }
+
         
 //        @RequestMapping(value = "/register", method = RequestMethod.POST)
 //        public ResponseEntity<?> verifyValidNewUser(@RequestBody UserRequestModel userRequestModel) throws Exception {

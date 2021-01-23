@@ -68,6 +68,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final String[] authList={
             "/authenticate"
+            ,"/authenticate/generateOtp"
             ,"/login"
             ,"/register"
             ,"/"
