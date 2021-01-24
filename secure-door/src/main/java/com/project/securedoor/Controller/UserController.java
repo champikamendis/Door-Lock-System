@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Controller
 public class UserController {
 
@@ -55,24 +57,46 @@ public class UserController {
     @Autowired
     private WebSecurityConfig webSecurityConfig;
 
-    @RequestMapping(value = "/authenticate", method = RequestMethod.GET)
-    public String login(Model model, String error, String logout) {
-        if (error != null)
-            model.addAttribute("errorMsg", "Your username and password are invalid.");
 
-        if (logout != null)
-            model.addAttribute("msg", "You have been logged out successfully.");
-
-        return "authenticate";
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public ResponseEntity<?> registerUser(@RequestBody UserRequestModel userRequestModel) throws Exception {
+        userService.loadUserByUsernameForCheck(userRequestModel.getUsername());
+        if (userService.isNewUser) {
+            UserModel user = userService.save(userRequestModel);
+            ConfirmationToken confirmationToken = new ConfirmationToken(user);
+            confirmationTokenRepository.save(confirmationToken);
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setTo(user.getUsername());
+            mailMessage.setSubject("Complete Registration!");
+            mailMessage.setFrom("champmend@gmail.com");
+            mailMessage.setText("To confirm your account, please click here : "
+                    + "http://localhost:8040/register/confirm-account?token=" + confirmationToken.getConfirmationToken());
+            try {
+                emailSenderService.sendMail(mailMessage);
+            } catch (Exception e) {
+                e.getStackTrace();
+                System.out.println(e.getStackTrace());
+            }
+        }
+        return ResponseEntity.ok("Verification email sent. You have to confirm it's you");
     }
 
-    @RequestMapping("/")
-    public ModelAndView firstPage() {
-        return new ModelAndView("welcome");
+    @RequestMapping(value = "/register/confirm-account", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<?> confirmUserAccount(@RequestParam("token") String confirmationToken) {
+        ConfirmationToken token = (ConfirmationToken) confirmationTokenRepository.findByConfirmationToken(confirmationToken);
+
+        if (token != null) {
+            UserModel user = userRepository.findByUsername(token.getUser().getUserName());
+            user.setIsVerified(true);
+            userRepository.save(user);
+            return ResponseEntity.ok("Verified");
+        } else {
+            return ResponseEntity.ok("Not Verified");
+        }
     }
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-    public RedirectView createAuthenticationToken(@ModelAttribute("authenticationRequest") JwtRequest authenticationRequest) throws Exception {
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
 
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
@@ -81,14 +105,14 @@ public class UserController {
 
         final String token = jwtTokenUtil.generateToken(userDetails);
         if(token!=null){
-            return new RedirectView("/authenticate/generateOtp");
+            return ResponseEntity.ok(new JwtResponse(token));
         }else{
-            return new RedirectView("/authenticate");
+            return ResponseEntity.ok("Not Okay");
         }
     }
 
         @RequestMapping(value = "/authenticate/generateOtp", method = RequestMethod.GET)
-        public ModelAndView generateOTP() {
+        public ResponseEntity<?> generateOTP() {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             int otp = otpService.generateOTP(username);
@@ -99,19 +123,18 @@ public class UserController {
             mailMessage.setText("Here is the OTP " + otp);
             try {
                 emailSenderService.sendMail(mailMessage);
-                return new ModelAndView("otpVerification");
+                ResponseEntity.ok("Mail sent");
             } catch (Exception e) {
                 e.getStackTrace();
                 System.out.println(e.getStackTrace());
-                return new ModelAndView("error");
+                return ResponseEntity.ok("Not mail sent");
             }
+            return ResponseEntity.ok("See your Emails");
 
         }
 
-
-        @RequestMapping(value = "/authenticate/generateOtp/validateOtp", method = RequestMethod.GET)
-        public @ResponseBody
-        ResponseEntity<?> validateOtp(@RequestParam("otpnum") int otpnum) {
+        @RequestMapping(value = "/authenticate/generateOtp/validateOtp", method = RequestMethod.POST)
+        public ResponseEntity<?> validateOtp(@RequestParam("otpnum") int otpnum, HttpServletResponse response) {
 
             final String SUCCESS = "Entered Otp is valid";
             final String FAIL = "Entered Otp is NOT valid. Please Retry!";
@@ -136,87 +159,13 @@ public class UserController {
                 return ResponseEntity.ok(FAIL);
             }
         }
-        @RequestMapping(value = "/register", method = RequestMethod.GET)
-        public ModelAndView registerPage() {
-            return new ModelAndView("register");
-        }
 
-    @RequestMapping(value = "/test/register", method = RequestMethod.GET)
-    public ModelAndView otpPage() {
-        return new ModelAndView("otpVerification");
-    }
 
-        
-//        @RequestMapping(value = "/register", method = RequestMethod.POST)
-//        public ResponseEntity<?> verifyValidNewUser(@RequestBody UserRequestModel userRequestModel) throws Exception {
-//            userService.loadUserByUsernameForCheck(userRequestModel.getUsername());
-//            if (userService.isNewUser) {
-//                UserModel user = userService.save(userRequestModel);
-//                ConfirmationToken confirmationToken = new ConfirmationToken(user);
-//                confirmationTokenRepository.save(confirmationToken);
-//                SimpleMailMessage mailMessage = new SimpleMailMessage();
-//                mailMessage.setTo(user.getUsername());
-//                mailMessage.setSubject("Complete Registration!");
-//                mailMessage.setFrom("champmend@gmail.com");
-//                mailMessage.setText("To confirm your account, please click here : "
-//                        + "http://localhost:8040/register/confirm-account?token=" + confirmationToken.getConfirmationToken());
-//                try {
-//                    emailSenderService.sendMail(mailMessage);
-//                } catch (Exception e) {
-//                    e.getStackTrace();
-//                    System.out.println(e.getStackTrace());
-//                }
-//            }
-//            return ResponseEntity.ok("You have to confirm it's you");
-//        }
-        @RequestMapping(value = "/register", method = RequestMethod.POST)
-        public ResponseEntity<?> registerUser(@ModelAttribute("userRequestModel") UserRequestModel userRequestModel) throws Exception {
-            userService.loadUserByUsernameForCheck(userRequestModel.getUsername());
-            if (userService.isNewUser) {
-                UserModel user = userService.save(userRequestModel);
-                ConfirmationToken confirmationToken = new ConfirmationToken(user);
-                confirmationTokenRepository.save(confirmationToken);
-                SimpleMailMessage mailMessage = new SimpleMailMessage();
-                mailMessage.setTo(user.getUsername());
-                mailMessage.setSubject("Complete Registration!");
-                mailMessage.setFrom("champmend@gmail.com");
-                mailMessage.setText("To confirm your account, please click here : "
-                        + "http://localhost:8040/register/confirm-account?token=" + confirmationToken.getConfirmationToken());
-                try {
-                    emailSenderService.sendMail(mailMessage);
-                } catch (Exception e) {
-                    e.getStackTrace();
-                    System.out.println(e.getStackTrace());
-                }
-            }
-            return ResponseEntity.ok("Verification email sent. You have to confirm it's you");
-        }
-
-        @RequestMapping(value = "/register/confirm-account", method = {RequestMethod.GET, RequestMethod.POST})
-        public ModelAndView confirmUserAccount(@RequestParam("token") String confirmationToken) {
-            ConfirmationToken token = (ConfirmationToken) confirmationTokenRepository.findByConfirmationToken(confirmationToken);
-
-            if (token != null) {
-                UserModel user = userRepository.findByUsername(token.getUser().getUserName());
-                user.setIsVerified(true);
-                userRepository.save(user);
-                return new ModelAndView("accountVerified");
-            } else {
-                return new ModelAndView("accountNotVerified");
-            }
-        }
 
         @RequestMapping(value = "/authenticate/generateOtp/validateOtp/access", method = RequestMethod.GET)
         public ResponseEntity<?> accessGrant() throws Exception {
             return ResponseEntity.ok("Granted the access successful");
         }
-
-//    @RequestMapping(value = "/authenticate/generateOtp/validateOtp/secure", method = RequestMethod.GET)
-//    public ResponseEntity<?> secure() throws Exception {
-//        webSecurityConfig.refreshToken("invalid");
-//
-//        return ResponseEntity.ok("Granted the access successful");
-//    }
 
     private void authenticate(String username, String password) throws Exception {
         try {
