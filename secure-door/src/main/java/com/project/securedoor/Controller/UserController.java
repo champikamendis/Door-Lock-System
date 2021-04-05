@@ -8,10 +8,7 @@ import com.project.securedoor.Repository.UserRepository;
 import com.project.securedoor.Service.EmailSenderService;
 import com.project.securedoor.Service.OTPService;
 import com.project.securedoor.Service.UserService;
-import org.apache.catalina.Store;
-import org.hibernate.loader.plan.spi.Return;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,16 +18,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
+@CrossOrigin
 public class UserController {
 
     @Autowired
@@ -112,24 +106,23 @@ public class UserController {
     }
 
         @RequestMapping(value = "/authenticate/generateOtp", method = RequestMethod.GET)
-        public ResponseEntity<?> generateOTP() {
+        public void generateOTP() {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             int otp = otpService.generateOTP(username);
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             mailMessage.setTo(username);
-            mailMessage.setSubject("Complete Registration!");
+            mailMessage.setSubject("OTP Verification!");
             mailMessage.setFrom("champmend@gmail.com");
-            mailMessage.setText("Here is the OTP " + otp);
+            mailMessage.setText("Here is the OTP. And this OTP is valid for 4 minutes. OTP: " + otp);
             try {
                 emailSenderService.sendMail(mailMessage);
-                ResponseEntity.ok("Mail sent");
+                System.out.println("Mail sent");
             } catch (Exception e) {
                 e.getStackTrace();
-                System.out.println(e.getStackTrace());
-                return ResponseEntity.ok("Not mail sent");
+                System.out.println("Mail not sent!");
             }
-            return ResponseEntity.ok("See your Emails");
+
 
         }
 
